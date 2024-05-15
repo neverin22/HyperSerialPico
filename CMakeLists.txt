@@ -1,28 +1,28 @@
 if (NOT PICO_PROGRAM_MAIN_ENTRY)
-	# User configuration for HyperSerialPico section starts here
+    # User configuration for HyperSerialPico section starts here
 
-	# Some boards, such as the first Adafruit revisions, may have trouble booting properly
-	# due to bad componets used in the design.
-	# Turn this setting to ON if your rp2040 is not detected after firmware upload and reset
-	set(BOOT_WORKAROUND OFF)
+    # Some boards, such as the first Adafruit revisions, may have trouble booting properly
+    # due to bad components used in the design.
+    # Turn this setting to ON if your RP2040 is not detected after firmware upload and reset
+    set(BOOT_WORKAROUND OFF)
 
-	# Default output data pin for the non-SPI LED strips (only for sk6812/ws2812b)
-	set(OUTPUT_DATA_PIN 2)
+    # Default output data pin for the non-SPI LED strips (only for sk6812/ws2812b)
+    set(OUTPUT_DATA_PIN 0)  # Set to the first GPIO pin for the first segment
 
-	# Default output data/clocks pin for the SPI LED strips (only for apa102, not for sk6812/ws2812b)
-	# only certain pairs of pins are allowed for selected SPI interface (refer to "readme.md")
-	set(OUTPUT_SPI_DATA_PIN 3)
-	set(OUTPUT_SPI_CLOCK_PIN 2)
-	set(OUTPUT_SPI_INTERFACE spi0)
+    # Default output data/clocks pin for the SPI LED strips (only for apa102, not for sk6812/ws2812b)
+    # only certain pairs of pins are allowed for selected SPI interface (refer to "readme.md")
+    set(OUTPUT_SPI_DATA_PIN 3)
+    set(OUTPUT_SPI_CLOCK_PIN 2)
+    set(OUTPUT_SPI_INTERFACE spi0)
 
-	# Use multi-segment, starting index of second led strip or OFF to disable
-	set(SECOND_SEGMENT_INDEX OFF)
+    # Use multi-segment, starting index of second led strip or OFF to disable
+    set(SECOND_SEGMENT_INDEX 127)  # Start the second segment at LED number 127 (half of 254)
 
-	# If multi-segment is used and it's reversed, set this option to ON to enable reversing
-	set(SECOND_SEGMENT_REVERSED OFF)
+    # If multi-segment is used and it's reversed, set this option to ON to enable reversing
+    set(SECOND_SEGMENT_REVERSED OFF)
 
-	# User configuration section ends here
-	# Usually you don't need to change anything below this section
+    # User configuration section ends here
+    # Usually you don't need to change anything below this section
 endif()
 
 cmake_minimum_required(VERSION 3.13)
@@ -59,35 +59,35 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/firmware)
 
 if(NOT CMAKE_HOST_WIN32)
-	string(ASCII 27 EscChar)
-	set(ColorReset  "${EscChar}[m")
-	set(GreenColor  "${EscChar}[32m")
-	set(YellowColor "${EscChar}[33m")
+    string(ASCII 27 EscChar)
+    set(ColorReset  "${EscChar}[m")
+    set(GreenColor  "${EscChar}[32m")
+    set(YellowColor "${EscChar}[33m")
 endif()
 
 if (OVERRIDE_DATA_PIN)
-	set(OUTPUT_DATA_PIN ${OVERRIDE_DATA_PIN})
-	message( STATUS "${YellowColor}Overriding Neopixel Data GPIO: ${OUTPUT_DATA_PIN}${ColorReset}")
+    set(OUTPUT_DATA_PIN ${OVERRIDE_DATA_PIN})
+    message( STATUS "${YellowColor}Overriding Neopixel Data GPIO: ${OUTPUT_DATA_PIN}${ColorReset}")
 endif()
 
 if (OVERRIDE_SPI_DATA_PIN)
-	set(OUTPUT_SPI_DATA_PIN ${OVERRIDE_SPI_DATA_PIN})
-	message( STATUS "${YellowColor}Overriding SPI Data GPIO: ${OUTPUT_SPI_DATA_PIN}${ColorReset}")
+    set(OUTPUT_SPI_DATA_PIN ${OVERRIDE_SPI_DATA_PIN})
+    message( STATUS "${YellowColor}Overriding SPI Data GPIO: ${OUTPUT_SPI_DATA_PIN}${ColorReset}")
 endif()
 
 if (OVERRIDE_SPI_CLOCK_PIN)
-	set(OUTPUT_SPI_CLOCK_PIN ${OVERRIDE_SPI_CLOCK_PIN})
-	message( STATUS "${YellowColor}Overriding SPI Clock GPIO: ${OUTPUT_SPI_CLOCK_PIN}${ColorReset}")
+    set(OUTPUT_SPI_CLOCK_PIN ${OVERRIDE_SPI_CLOCK_PIN})
+    message( STATUS "${YellowColor}Overriding SPI Clock GPIO: ${OUTPUT_SPI_CLOCK_PIN}${ColorReset}")
 endif()
 
 if (OVERRIDE_SPI_INTERFACE)
-	set(OUTPUT_SPI_INTERFACE ${OVERRIDE_SPI_INTERFACE})
-	message( STATUS "${YellowColor}Overriding SPI Interface: ${OUTPUT_SPI_INTERFACE}${ColorReset}")
+    set(OUTPUT_SPI_INTERFACE ${OVERRIDE_SPI_INTERFACE})
+    message( STATUS "${YellowColor}Overriding SPI Interface: ${OUTPUT_SPI_INTERFACE}${ColorReset}")
 endif()
 
 if (OVERRIDE_BOOT_WORKAROUND)
-	set(BOOT_WORKAROUND ${OVERRIDE_BOOT_WORKAROUND})
-	message( STATUS "${YellowColor}Overriding boot workaround: ${BOOT_WORKAROUND}${ColorReset}")
+    set(BOOT_WORKAROUND ${OVERRIDE_BOOT_WORKAROUND})
+    message( STATUS "${YellowColor}Overriding boot workaround: ${BOOT_WORKAROUND}${ColorReset}")
 endif()
 
 message( STATUS "---------------------------")
@@ -96,7 +96,7 @@ message( STATUS "SPI Data GPIO: ${GreenColor}${OUTPUT_SPI_DATA_PIN}${ColorReset}
 message( STATUS "SPI Clock GPIO: ${GreenColor}${OUTPUT_SPI_CLOCK_PIN}${ColorReset}")
 
 if (OUTPUT_SPI_CHIP_SELECT)
-	message( STATUS "SPI Select GPIO: ${GreenColor}${OUTPUT_SPI_CHIP_SELECT}${ColorReset}")
+    message( STATUS "SPI Select GPIO: ${GreenColor}${OUTPUT_SPI_CHIP_SELECT}${ColorReset}")
 endif()
 
 message( STATUS "SPI Interface: ${GreenColor}${OUTPUT_SPI_INTERFACE}${ColorReset}")
@@ -129,7 +129,7 @@ IF(NOT SECOND_SEGMENT_INDEX)
     IF(NOT DISABLE_SPI_LEDS)
         HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_Spi")
         target_compile_definitions("${CMAKE_PROJECT_NAME}_Spi" PRIVATE -DSPILED_APA102 -DSPI_INTERFACE=${OUTPUT_SPI_INTERFACE} -DDATA_PIN=${OUTPUT_SPI_DATA_PIN} -DCLOCK_PIN=${OUTPUT_SPI_CLOCK_PIN})
-    endif()
+    ENDIF()
     HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Cold")
     target_compile_definitions("${CMAKE_PROJECT_NAME}_sk6812Cold" PRIVATE -DNEOPIXEL_RGBW -DCOLD_WHITE -DDATA_PIN=${OUTPUT_DATA_PIN})
     HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Neutral")
@@ -142,14 +142,4 @@ ELSE()
         target_compile_definitions("${CMAKE_PROJECT_NAME}_sk6812Cold_multisegment_at_${SECOND_SEGMENT_INDEX}" PRIVATE -DNEOPIXEL_RGBW -DCOLD_WHITE -DDATA_PIN=${OUTPUT_DATA_PIN} -DSECOND_SEGMENT_START_INDEX=${SECOND_SEGMENT_INDEX})
         HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Neutral_multisegment_at_${SECOND_SEGMENT_INDEX}")
         target_compile_definitions("${CMAKE_PROJECT_NAME}_sk6812Neutral_multisegment_at_${SECOND_SEGMENT_INDEX}" PRIVATE -DNEOPIXEL_RGBW -DDATA_PIN=${OUTPUT_DATA_PIN} -DSECOND_SEGMENT_START_INDEX=${SECOND_SEGMENT_INDEX})
-        HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_ws2812_multisegment_at_${SECOND_SEGMENT_INDEX}")
-        target_compile_definitions("${CMAKE_PROJECT_NAME}_ws2812_multisegment_at_${SECOND_SEGMENT_INDEX}" PRIVATE -DNEOPIXEL_RGB -DDATA_PIN=${OUTPUT_DATA_PIN} -DSECOND_SEGMENT_START_INDEX=${SECOND_SEGMENT_INDEX})
-    ELSE()
-        HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Cold_rev_multisegment_at_${SECOND_SEGMENT_INDEX}")
-        target_compile_definitions("${CMAKE_PROJECT_NAME}_sk6812Cold_rev_multisegment_at_${SECOND_SEGMENT_INDEX}" PRIVATE -DNEOPIXEL_RGBW -DCOLD_WHITE -DDATA_PIN=${OUTPUT_DATA_PIN} -DSECOND_SEGMENT_START_INDEX=${SECOND_SEGMENT_INDEX} -DSECOND_SEGMENT_REVERSED)
-        HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_sk6812Neutral_rev_multisegment_at_${SECOND_SEGMENT_INDEX}")
-        target_compile_definitions("${CMAKE_PROJECT_NAME}_sk6812Neutral_rev_multisegment_at_${SECOND_SEGMENT_INDEX}" PRIVATE -DNEOPIXEL_RGBW -DDATA_PIN=${OUTPUT_DATA_PIN} -DSECOND_SEGMENT_START_INDEX=${SECOND_SEGMENT_INDEX} -DSECOND_SEGMENT_REVERSED)
-        HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_ws2812_rev_multisegment_at_${SECOND_SEGMENT_INDEX}")
-        target_compile_definitions("${CMAKE_PROJECT_NAME}_ws2812_rev_multisegment_at_${SECOND_SEGMENT_INDEX}" PRIVATE -DNEOPIXEL_RGB -DDATA_PIN=${OUTPUT_DATA_PIN} -DSECOND_SEGMENT_START_INDEX=${SECOND_SEGMENT_INDEX} -DSECOND_SEGMENT_REVERSED)
-    ENDIF()
-ENDIF()
+        HyperSerialPicoTarget("${CMAKE_PROJECT_NAME}_ws2812_multisegment_at_${
